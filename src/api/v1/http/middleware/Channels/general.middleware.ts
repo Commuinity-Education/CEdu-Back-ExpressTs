@@ -19,12 +19,12 @@ import {eMessages} from "../../../../../utils/constants/eMessages";
 export const requestPrivate = async ({params: {channelId: id}, user}: Request, res: Response, next: NextFunction) => {
 
     const channel: Channels = await Channels.findByPk(id, {
-        attributes: ['id', 'isPrivate', 'ownerId'],
+        attributes: ['id', 'isPrivate', 'ownerId', 'title'],
         raw: true
     })
 
     if (channel.isPrivate) {
-        Requests.makeRequest(channel['ownerId'], user['id'], REQUEST_TYPE.channel, channel.id)
+        Requests.makeRequest(channel['ownerId'], user['id'], REQUEST_TYPE.channel, channel.id, channel['title'])
             .then(success(res, sMessages.REQUEST_SEND_OK))
             .catch(sendError(res))
     } else {

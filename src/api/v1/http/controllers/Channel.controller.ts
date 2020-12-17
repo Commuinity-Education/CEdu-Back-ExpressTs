@@ -1,20 +1,22 @@
-import { Request, Response, Router } from "express";
+import {Request, Response, Router} from "express";
 import Channels from "../../../../models/Channels.model";
 import IController from "../../../../interfaces/controller.interface";
-import { sendError, success } from "../../../../utils/helpers/response";
-import { createAndUpdateChannelBody } from "../middleware/Channels/body.middleware"
+import {sendError, success} from "../../../../utils/helpers/response";
+import {createAndUpdateChannelBody} from "../middleware/Channels/body.middleware"
 import passport from "../../../../libs/passport";
 import User from "../../../../models/User.model";
-import { sMessages } from "../../../../utils/constants/SMessages";
+import {sMessages} from "../../../../utils/constants/SMessages";
 import ServerError from "../../../../errors/serverError";
-import { eMessages } from '../../../../utils/constants/eMessages'
+import {eMessages} from '../../../../utils/constants/eMessages'
 import Subscriber_Channel from "../../../../models/Subscriber-channel.model"
 import PersonalInfo from "../../../../models/Personal-info.model";
-import { requestPrivate ,channelParam} from "../middleware/Channels/general.middleware";
+import {channelParam, requestPrivate} from "../middleware/Channels/general.middleware";
+import {ChannelsMiddleware} from "../middleware/Channels/Channels.middleware";
 
 
 export default class ChannelsController implements IController {
     router = Router()
+    private middleware = new ChannelsMiddleware()
 
     constructor() {
         this.init()
@@ -24,11 +26,11 @@ export default class ChannelsController implements IController {
         this.router.post('/create', passport.token, createAndUpdateChannelBody, this.createChannel)
         this.router.get('/list/:userName', this.getAllChannels)
         this.router.get('/list', passport.token, this.getOwneChannelList)
-        this.router.put('/update/:channelId', passport.token,channelParam, createAndUpdateChannelBody, this.updateChannel)
-        this.router.delete('/remove/:channelId', passport.token, channelParam,this.deleteChannel)
-        this.router.get('/:channelId/subscribe', passport.token, channelParam,requestPrivate, this.subscribe)
-        this.router.get('/:channelId/subscribers', passport.token,channelParam, this.getChannelsSubscribers)
-        this.router.delete('/:channelId/unsubscribe', passport.token,channelParam, this.unsubscribe)
+        this.router.put('/update/:channelId', passport.token, channelParam, createAndUpdateChannelBody, this.updateChannel)
+        this.router.delete('/remove/:channelId', passport.token, channelParam, this.deleteChannel)
+        this.router.post('/:channelId/subscribe', passport.token, channelParam, this.middleware.checkSubscriptionBefore, requestPrivate, this.subscribe)
+        this.router.get('/:channelId/subscribers', passport.token, channelParam, this.getChannelsSubscribers)
+        this.router.delete('/:channelId/unsubscribe', passport.token, channelParam, this.unsubscribe)
     }
 
 
@@ -118,7 +120,7 @@ export default class ChannelsController implements IController {
             .catch(sendError(res))
     }
 
-       /**
+     /**
    * @api {get} /channel/list/  Get List Of Channeles need auth
    * @apiName Get User Channels private
    * @apiGroup Channel
@@ -158,7 +160,7 @@ export default class ChannelsController implements IController {
             .catch(sendError(res))
     }
 
- /**
+     /**
    * @api {put} /channel/update/:channelId Update Channel
    * @apiName Update Channel
    * @apiGroup Channel
@@ -241,8 +243,30 @@ export default class ChannelsController implements IController {
     }
 
 
-    
-    private subscribe({ params, user }: Request, res: Response) {
+    /**
+     * @api {post} /channel/:channelId/subscribe Subscribe Channel
+     * @apiName Subscribe Channel
+     * @apiGroup Channel
+     * @apiParam {String} channelId Required - need channel id from param to subscribe
+     * @apiHeader {Bearer} Authorization  JWT token
+     * @apiSuccess (200) {string} message Request send successfully.
+     * @apiSuccessExample {json} Success-Response:
+     *                      {
+     * "status": 200,
+     * "code": 3006,
+     * "message": "Request send successfully",
+     * "data": null
+     *}
+     * @apiError (400) Bad-Request many defrent error can be responsed
+     * @apiErrorExample {json} Error-Response:
+     *    HTTP/1.1 404 notFound
+     *     {
+     *       status: 'error',
+     *       code:1001 ,
+     *       message: "notFound"
+     *     }
+     */
+    private subscribe({params, user}: Request, res: Response) {
         Subscriber_Channel.findOrCreate({
             where: {
                 channelId: params.channelId,
@@ -261,13 +285,48 @@ export default class ChannelsController implements IController {
                     data.setDataValue('deletedAt', null)
                     return data.save()
                 }
-                throw new ServerError(eMessages.SUBSCRIBED_BEFORE)
             })
             .then(success(res, sMessages.IS_SUBSCRIBE))
             .catch(sendError(res))
     }
 
-    private getChannelsSubscribers({ params }: Request, res: Response) {
+    /**
+     * @api {get} /channel/:channelId/subscribers  Get List Of subscribers
+     * @apiName Get Channel Subscribers
+     * @apiGroup Channel
+     * @apiParam {String} channelId Required - need channel id from param to get list
+     * @apiSuccess (200) {object} data List of Channel subscribers.
+     * @apiHeader {Bearer} Authorization  JWT token
+     * @apiSuccessExample {json} Success-Response:
+     * {
+     *"status": 200,
+     *  "code": 3000,
+     * "message": "ok",
+     *"data": {
+     *   "subscribers": [
+     *                      {
+     *                           "userName": "user1",
+     *                           "phoneNumber": null,
+     *                           "email": null,
+     *                           "info": {
+     *                               "name": "user1",
+     *                               "lastName": "user1",
+     *                               "avatar": null
+     *                           }
+     *                       }
+     *                  ]
+     *      }
+     * }
+     * @apiError (404) not-Found many defrent error can be responsed
+     * @apiErrorExample {json} Error-Response:
+     *    HTTP/1.1 404 NotFound
+     *     {
+     *       status: 'error',
+     *       code:1001 ,
+     *       message: Not found
+     *     }
+     */
+    private getChannelsSubscribers({params}: Request, res: Response) {
         Channels.findAndCountAll({
             where: {
                 id: params.channelId,
@@ -289,7 +348,7 @@ export default class ChannelsController implements IController {
             // DESC-ASC
             order: [['subscribers', 'info', 'lastName', 'ASC']]
         })
-            .then(({ count, rows }) => {
+            .then(({count, rows}) => {
                 return {
                     subscribers: rows[0]['subscribers'],
                     count
@@ -299,16 +358,38 @@ export default class ChannelsController implements IController {
             .catch(sendError(res))
     }
 
-    private unsubscribe({ params, user }: Request, res: Response) {
+    /**
+     * @api {delete} /channel/:channelId/unsubscribe Unsubscribe Channel
+     * @apiName Unsubscribe Channel
+     * @apiGroup Channel
+     * @apiParam {String} channelId Required - need channel id from param to unsubcribe user
+     * @apiHeader {Bearer} Authorization  JWT token
+     * @apiSuccess (200) {string} message User Unsubscribed.
+     * @apiSuccessExample {json} Success-Response:
+     *                      {
+     * "status": 200,
+     * "code": 3009,
+     * "message": "User Unsubscribed",
+     * "data": null
+     *}
+     * @apiError (400) Bad-Request many defrent error can be responsed
+     * @apiErrorExample {json} Error-Response:
+     *    HTTP/1.1 400 Bad Request
+     *     {
+     *       status: 'error',
+     *       code:2001 ,
+     *       message: "unable to delete"
+     *     }
+     */
+    private unsubscribe({params, user}: Request, res: Response) {
         Subscriber_Channel.destroy({
             where: {
                 channelId: params.channelId,
                 subscriberId: user['id'],
             },
         })
-            .then(success(res, sMessages.DELETE_OK))
+            .then(success(res, sMessages.UNSUBSCRIBE))
             .catch(sendError(res))
     }
-
 
 }

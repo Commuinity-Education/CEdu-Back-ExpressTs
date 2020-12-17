@@ -44,8 +44,25 @@ export default class JoiValidator {
         return this._validate(this.schema.createChannelBody, body)
     }
 
-
-
+    /**
+     * @param {string} body.requesterId
+     * @param {string} body.typeOfRequest
+     * @param {string} body.typeId
+     * @param {string} body.typeName
+     * @return {Object} body - validated value if validation was ok
+     * @throws {JoivalidationError} error - validation error
+     * */
+    public acceptOrRejectRequestBody(body: object){
+        return this._validate(this.schema.requestStatusBody, body)
+    }
+    /**
+     * @param {string} param - accept | reject
+     * @return {Object} body - validated value if validation was ok
+     * @throws {JoivalidationError} error - validation error
+     * */
+    public acceptOrRejectRequestParam(param:object){
+        return this._validate(this.schema.requestStatusParam,param)
+    }
 
 
 

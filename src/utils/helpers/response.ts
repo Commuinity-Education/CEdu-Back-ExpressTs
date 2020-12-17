@@ -30,9 +30,9 @@ export const sendError = (res: Response) => (e?) => {
  * */
 export const success = (res: Response, detail?: IResponse) => (entity) => {
     if (!detail) detail = sMessages.DEFAULT
-    if (entity)
+    if (entity || !detail.withData)
         return res.status(detail.statusCode).json({
-            status:detail.statusCode,
+            status: detail.statusCode,
             code: detail.code,
             message: detail.message,
             data: detail.withData ? entity : null

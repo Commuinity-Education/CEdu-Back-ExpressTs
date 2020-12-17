@@ -10,4 +10,5 @@ export const REQUEST_STATUS = {
 }
 export const REQUEST_TYPE = {
     channel: 'channel',
+    group: 'group'
 }

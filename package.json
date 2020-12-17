@@ -11,7 +11,7 @@
     "dev": "nodemon --watch \"src/**/*\" --ext \"ts .env json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/server.ts\"",
     "build": "tsc -p .",
     "start": "npm run build && NODE_ENV=prud node dist/server.js  ",
-    "g:apidoc": "npx apidoc -i src/ -o apidoc/ -t ./node_modules/apidoc-plugin-websocket/template",
+    "g:apidoc": "npx apidoc -i src/ -o ../apidoc/ -t ./node_modules/apidoc-plugin-websocket/template",
     "g:migration": "npx sequelize-cli migration:generate --name",
     "migrate": "npx sequelize-cli db:migrate",
     "migrate:revert": "npx sequelize-cli db:migrate:undo"

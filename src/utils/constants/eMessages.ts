@@ -1,6 +1,5 @@
-import { StatusCodes } from "http-status-codes";
-import { ValidationError ,DatabaseError } from "sequelize";
-import IResponse from "../../interfaces/successResponse.interface";
+import {StatusCodes} from "http-status-codes";
+import {DatabaseError, ValidationError} from "sequelize";
 
 export const eMessages = {
     USERNAME_NOT_PROVIDED: {
@@ -79,9 +78,14 @@ export const eMessages = {
         code: 1013,
         statusCode: StatusCodes.BAD_REQUEST
     },
-    UUID_NOT_VALID:{
+    UUID_NOT_VALID: {
         message: 'UUID is not valid',
         code: 1014,
+        statusCode: StatusCodes.BAD_REQUEST
+    },
+    STATUS_CANT_CHANGE: {
+        message: 'you cant change request status twice plz ask for request again',
+        code: 1015,
         statusCode: StatusCodes.BAD_REQUEST
     }
 
@@ -90,6 +94,7 @@ export const eMessages = {
 
 export const systemErrorMessages = {
     default: (e) => {
+        console.log(e.code)
         return {
             code: 2001,
             statusCode: e.code ? e.code : StatusCodes.INTERNAL_SERVER_ERROR,
@@ -110,5 +115,12 @@ export const systemErrorMessages = {
             message: e.message
         }
     },
-   
+    serverError: (e) => {
+        return {
+            code: e.code || 2000,
+            statusCode: e.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
+            message: e.message
+        }
+    },
+
 }

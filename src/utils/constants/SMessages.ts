@@ -37,6 +37,24 @@ export const sMessages = {
         code: 3006,
         statusCode: StatusCodes.OK,
         withData: false
+    },
+    ACCEPT_REQUEST:{
+        message: 'Request Accepted',
+        code: 3007,
+        statusCode: StatusCodes.OK,
+        withData: false
+    },
+    REJECT_REQUEST:{
+        message: 'Request Rejected',
+        code: 3008,
+        statusCode: StatusCodes.OK,
+        withData: false
+    },
+    UNSUBSCRIBE:{
+        message: 'User Unsubscribed',
+        code: 3009,
+        statusCode: StatusCodes.OK,
+        withData: false
     }
 
 

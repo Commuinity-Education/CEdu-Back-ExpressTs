@@ -24,6 +24,9 @@ export default class Requests extends BaseModel {
                     type: DataTypes.UUID,
                     allowNull: false,
                 },
+                typeName: {
+                    type: DataTypes.STRING,
+                },
                 status: {
                     type: DataTypes.ENUM(...REQUEST_STATUS_ENUM),
                     allowNull: false,
@@ -44,7 +47,7 @@ export default class Requests extends BaseModel {
         );
     }
 
-    static makeRequest(userId, requesterId, typeOfRequest: string, typeId) {
+    static makeRequest(userId, requesterId, typeOfRequest: string, typeId,typeName) {
         return new Promise((resolve, reject) => {
             Requests.findOrCreate({
                 where: {
@@ -58,6 +61,7 @@ export default class Requests extends BaseModel {
                     requesterId,
                     typeOfRequest,
                     typeId,
+                    typeName,
                     status: REQUEST_STATUS.pending,
                     updatedBy: requesterId
                 }

@@ -1,8 +1,8 @@
-import { ValidationError ,UniqueConstraintError, DatabaseError } from "sequelize";
-import { eMessages, systemErrorMessages } from "../utils/constants/eMessages";
+import {DatabaseError, UniqueConstraintError, ValidationError} from "sequelize";
+import {eMessages, systemErrorMessages} from "../utils/constants/eMessages";
 import config from "../configs/config";
 import ServerError from "./serverError";
-import { IErrorPropertys } from "../interfaces/errorMessages.interface";
+import {IErrorPropertys} from "../interfaces/errorMessages.interface";
 import JoivalidationError from "./JoivalidationError";
 
 /**
@@ -16,19 +16,20 @@ export class HandelErrors {
         this.seqeulizeError(_Error)
         this.joiError(_Error)
         this.databaseError(_Error)
+        this.serverError(_Error)
         // other error types in here
         this.syntaxError(_Error)
-        this.defaultError(_Error)
+        this.catchMainError(_Error)
         if (config.env === 'development') console.log(this._Error || this.errorProperty)
 
     }
 
-    private defaultError(e) {
-        if (e instanceof ServerError || e instanceof TypeError) return this.errorProperty = systemErrorMessages.default(e)
+    private serverError(e) {
+        if (e instanceof ServerError) return this.errorProperty = systemErrorMessages.serverError(e)
     }
 
     private seqeulizeError(e) {
-        if (e instanceof ValidationError || e instanceof UniqueConstraintError ) {
+        if (e instanceof ValidationError || e instanceof UniqueConstraintError) {
             return this.errorProperty = systemErrorMessages.sequlizeValidationError(e)
         }
     }
@@ -42,11 +43,15 @@ export class HandelErrors {
     }
 
     private syntaxError(e) {
-        if (e instanceof SyntaxError) return this.errorProperty = systemErrorMessages.default(e)
+        if (e instanceof SyntaxError || e instanceof TypeError) return this.errorProperty = systemErrorMessages.default(e)
     }
-    
-    private databaseError(e){
+
+    private databaseError(e) {
         if (e instanceof DatabaseError) return this.errorProperty = systemErrorMessages.dbError(e)
+    }
+
+    private catchMainError(e) {
+        if ((e instanceof Error) && !this.errorProperty) return this.errorProperty = systemErrorMessages.default(e)
     }
 
     /**
@@ -60,6 +65,7 @@ export class HandelErrors {
      * @return  error - return error like example
      **/
     public get properError() {
+        console.log(this.errorProperty)
         return this.errorProperty
     }
 

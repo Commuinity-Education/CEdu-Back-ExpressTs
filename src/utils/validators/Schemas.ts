@@ -82,10 +82,29 @@ export default class Schemas {
         return this.#createChannelBody
     }
 
+    #requestStatusBody = {
+        requesterId:Joi.string().required(),
+        typeOfRequest:Joi.string().required(),
+        typeId:Joi.string().required(),
+        typeName:Joi.string().required(),
+    }
+    /**
+     * get request body schema
+     * @return {Object} schema
+     */
+    get requestStatusBody() {
+        return this.#requestStatusBody
+    }
 
-
-
-
-
+    #requestStatusParam = {
+        status:Joi.any().valid('accept','reject')
+    }
+    /**
+     * get request param schema
+     * @return {Object} schema
+     */
+    get requestStatusParam() {
+        return this.#requestStatusParam
+    }
 
 }

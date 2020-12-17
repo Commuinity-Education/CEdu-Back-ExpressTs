@@ -35,7 +35,14 @@ export default class Notifications extends BaseModel {
     );
   }
 
-
+/**
+ * create a notification
+ * @param {string} receiverId
+ * @param {string} message
+ * @param {string} type
+ * @param {string} typeId
+ *
+ * */
     static sendNotify(receiverId, message: string, type: string = null, typeId = null) {
         return this.create({
             userId: receiverId,
