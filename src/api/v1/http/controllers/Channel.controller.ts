@@ -10,7 +10,7 @@ import ServerError from "../../../../errors/serverError";
 import {eMessages} from '../../../../utils/constants/eMessages'
 import Subscriber_Channel from "../../../../models/Subscriber-channel.model"
 import PersonalInfo from "../../../../models/Personal-info.model";
-import {channelParam, requestPrivate} from "../middleware/Channels/general.middleware";
+import {validateParamId, requestPrivate} from "../middleware/Channels/general.middleware";
 import {ChannelsMiddleware} from "../middleware/Channels/Channels.middleware";
 
 
@@ -26,11 +26,11 @@ export default class ChannelsController implements IController {
         this.router.post('/create', passport.token, createAndUpdateChannelBody, this.createChannel)
         this.router.get('/list/:userName', this.getAllChannels)
         this.router.get('/list', passport.token, this.getOwneChannelList)
-        this.router.put('/update/:channelId', passport.token, channelParam, createAndUpdateChannelBody, this.updateChannel)
-        this.router.delete('/remove/:channelId', passport.token, channelParam, this.deleteChannel)
-        this.router.post('/:channelId/subscribe', passport.token, channelParam, this.middleware.checkSubscriptionBefore, requestPrivate, this.subscribe)
-        this.router.get('/:channelId/subscribers', passport.token, channelParam, this.getChannelsSubscribers)
-        this.router.delete('/:channelId/unsubscribe', passport.token, channelParam, this.unsubscribe)
+        this.router.put('/update/:channelId', passport.token, validateParamId, createAndUpdateChannelBody, this.updateChannel)
+        this.router.delete('/remove/:channelId', passport.token, validateParamId, this.deleteChannel)
+        this.router.post('/:channelId/subscribe', passport.token, validateParamId, this.middleware.checkSubscriptionBefore, requestPrivate, this.subscribe)
+        this.router.get('/:channelId/subscribers', passport.token, validateParamId, this.getChannelsSubscribers)
+        this.router.delete('/:channelId/unsubscribe', passport.token, validateParamId, this.unsubscribe)
     }
 
 

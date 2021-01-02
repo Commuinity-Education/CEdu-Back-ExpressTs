@@ -40,7 +40,7 @@ export const requestPrivate = async ({params: {channelId: id}, user}: Request, r
  * @param {NextFunction} next
  * @throws {ServerError}
  * */
-export const channelParam = ({params: {channelId}, user}: Request, res: Response, next: NextFunction) => {
+export const validateParamId = ({params: {channelId}, user}: Request, res: Response, next: NextFunction) => {
     if (!uuid.validate(channelId)) throw new ServerError(eMessages.UUID_NOT_VALID)
     next()
 }

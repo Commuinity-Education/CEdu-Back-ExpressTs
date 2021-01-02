@@ -10,7 +10,7 @@ import ServerError from "../../../../errors/serverError";
 import {eMessages} from '../../../../utils/constants/eMessages'
 import Subscriber_Channel from "../../../../models/Subscriber-channel.model"
 import PersonalInfo from "../../../../models/Personal-info.model";
-import {channelParam, requestPrivate} from "../middleware/Channels/general.middleware";
+import {validateParamId, requestPrivate} from "../middleware/Channels/general.middleware";
 import Groups from "../../../../models/Groups.model";
 import {GroupsMiddleware} from "../middleware/groups/Groups.middleware";
 import {GroupsService} from "../services/Groups.service";
@@ -28,11 +28,11 @@ export default class GroupsController implements IController {
         this.router.post('/create', passport.token, this.middleware.createGroup_validateBody, this.createGroup)
         this.router.get('/list/:groupName', this.getGroupsByName)
         this.router.get('/list', passport.token, this.getOwneGroupList)
-        this.router.put('/update/:channelId', passport.token, channelParam, createAndUpdateChannelBody, this.updateChannel)
-        this.router.delete('/remove/:channelId', passport.token, channelParam, this.deleteChannel)
-        this.router.post('/:channelId/subscribe', passport.token, channelParam, requestPrivate, this.subscribe)
-        this.router.get('/:channelId/subscribers', passport.token, channelParam, this.getChannelsSubscribers)
-        this.router.delete('/:channelId/unsubscribe', passport.token, channelParam, this.unsubscribe)
+        this.router.put('/update/:channelId', passport.token, validateParamId, createAndUpdateChannelBody, this.updateChannel)
+        this.router.delete('/remove/:channelId', passport.token, validateParamId, this.deleteChannel)
+        this.router.post('/:groupId/join', passport.token, validateParamId, requestPrivate, this.join)
+        this.router.get('/:channelId/subscribers', passport.token, validateParamId, this.getChannelsSubscribers)
+        this.router.delete('/:channelId/unsubscribe', passport.token, validateParamId, this.unsubscribe)
     }
 
 
@@ -164,6 +164,53 @@ export default class GroupsController implements IController {
     }
 
     /**
+     * @api {post} /channel/:channelId/subscribe Subscribe Channel
+     * @apiName Subscribe Channel
+     * @apiGroup Channel
+     * @apiParam {String} channelId Required - need channel id from param to subscribe
+     * @apiHeader {Bearer} Authorization  JWT token
+     * @apiSuccess (200) {string} message Request send successfully.
+     * @apiSuccessExample {json} Success-Response:
+     *                      {
+     * "status": 200,
+     * "code": 3006,
+     * "message": "Request send successfully",
+     * "data": null
+     *}
+     * @apiError (400) Bad-Request many defrent error can be responsed
+     * @apiErrorExample {json} Error-Response:
+     *    HTTP/1.1 404 notFound
+     *     {
+     *       status: 'error',
+     *       code:1001 ,
+     *       message: "notFound"
+     *     }
+     */
+    private join({params, user}: Request, res: Response) {
+        Subscriber_Channel.findOrCreate({
+            where: {
+                channelId: params.channelId,
+                subscriberId: user['id']
+            },
+            defaults: {
+                channelId: params.channelId,
+                subscriberId: user['id']
+            },
+            paranoid: false
+        })
+            .then(async ([data, isCreated]) => {
+                if (isCreated) return data
+                // if a user unsubscribe the channel, deletedAt, will set to a date and if user subscribe again deletedAt will be null
+                if (data['deletedAt']) {
+                    data.setDataValue('deletedAt', null)
+                    return data.save()
+                }
+            })
+            .then(success(res, sMessages.IS_SUBSCRIBE))
+            .catch(sendError(res))
+    }
+
+    /**
      * @api {put} /channel/update/:channelId Update Channel
      * @apiName Update Channel
      * @apiGroup Channel
@@ -246,52 +293,7 @@ export default class GroupsController implements IController {
     }
 
 
-    /**
-     * @api {post} /channel/:channelId/subscribe Subscribe Channel
-     * @apiName Subscribe Channel
-     * @apiGroup Channel
-     * @apiParam {String} channelId Required - need channel id from param to subscribe
-     * @apiHeader {Bearer} Authorization  JWT token
-     * @apiSuccess (200) {string} message Request send successfully.
-     * @apiSuccessExample {json} Success-Response:
-     *                      {
-     * "status": 200,
-     * "code": 3006,
-     * "message": "Request send successfully",
-     * "data": null
-     *}
-     * @apiError (400) Bad-Request many defrent error can be responsed
-     * @apiErrorExample {json} Error-Response:
-     *    HTTP/1.1 404 notFound
-     *     {
-     *       status: 'error',
-     *       code:1001 ,
-     *       message: "notFound"
-     *     }
-     */
-    private subscribe({params, user}: Request, res: Response) {
-        Subscriber_Channel.findOrCreate({
-            where: {
-                channelId: params.channelId,
-                subscriberId: user['id']
-            },
-            defaults: {
-                channelId: params.channelId,
-                subscriberId: user['id']
-            },
-            paranoid: false
-        })
-            .then(async ([data, isCreated]) => {
-                if (isCreated) return data
-                // if a user unsubscribe the channel, deletedAt, will set to a date and if user subscribe again deletedAt will be null
-                if (data['deletedAt']) {
-                    data.setDataValue('deletedAt', null)
-                    return data.save()
-                }
-            })
-            .then(success(res, sMessages.IS_SUBSCRIBE))
-            .catch(sendError(res))
-    }
+
 
     /**
      * @api {get} /channel/:channelId/subscribers  Get List Of subscribers
