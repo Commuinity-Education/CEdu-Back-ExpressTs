@@ -1,8 +1,8 @@
 import Schemas from "./Schemas";
 import * as Joi from 'joi'
-import ServerError from "../../errors/serverError";
 import JoivalidationError from "../../errors/JoivalidationError";
-import { eMessages } from "../constants/eMessages";
+import {Model, ModelAttributes} from "sequelize";
+import * as _ from 'lodash'
 
 /**
  * @classdesc this class is for validation objectes
@@ -60,11 +60,20 @@ export default class JoiValidator {
      * @return {Object} body - validated value if validation was ok
      * @throws {JoivalidationError} error - validation error
      * */
-    public acceptOrRejectRequestParam(param:object){
-        return this._validate(this.schema.requestStatusParam,param)
+    public acceptOrRejectRequestParam(param: object) {
+        return this._validate(this.schema.requestStatusParam, param)
     }
 
 
+    /**
+     * @param {string} body.groupName
+     * @param {boolean} body.isPrivate
+     * @return {Object} body - validated value if validation was ok
+     * @throws {JoivalidationError} error - validation error
+     * */
+    public GroupCreateValidator(body) {
+      return this._validate(this.schema.groupCreateBody,body)
+    }
 
     /**
      * @param {Object} body request body data
@@ -73,7 +82,7 @@ export default class JoiValidator {
      * @throw {JoivalidationError} error
      */
     private _validate(schema, body) {
-        const { value, error } = Joi.object(schema).validate(body)
+        const {value, error} = Joi.object(schema).validate(body)
         if (error) throw new JoivalidationError(error)
         return value
     }

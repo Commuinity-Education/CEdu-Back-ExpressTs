@@ -12,9 +12,9 @@ export const eMessages = {
         code: 1001,
         statusCode: StatusCodes.NOT_FOUND
     },
-    ROUTE_NOT_FOUND: (dist) => {
+    ROUTE_NOT_FOUND: (methode:string,dist) => {
         return {
-            message: `you want to go ${dist} but this distination Dosnot exist`,
+            message: `you want to go { ${methode.toUpperCase()} => ${dist} } but this distination Dosnot exist`,
             code: 1002,
             statusCode: StatusCodes.BAD_REQUEST
         }

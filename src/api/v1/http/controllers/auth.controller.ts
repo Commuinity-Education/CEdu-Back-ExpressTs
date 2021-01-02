@@ -1,17 +1,16 @@
-import { Request, Response, Router } from "express";
+import {Request, Response, Router} from "express";
 import IController from "../../../../interfaces/controller.interface";
 import User from "../../../../models/User.model";
-import { sendError, success } from "../../../../utils/helpers/response";
+import {sendError, success} from "../../../../utils/helpers/response";
 import ServerError from "../../../../errors/serverError";
-import { eMessages } from "../../../../utils/constants/eMessages";
+import {eMessages} from "../../../../utils/constants/eMessages";
 import JWT from "../../../../libs/JWT";
 import passport from "../../../../libs/passport";
 import AuthenticationMiddleware from "../../../../middlewares/Authentication.middleware";
-import { sMessages } from "../../../../utils/constants/SMessages";
-import { Importer } from "../../../../utils/helpers/Piper";
+import {sMessages} from "../../../../utils/constants/SMessages";
 import Email from "../../../../libs/Email";
-import * as _ from 'lodash'
-import PersonalInfo from "../../../../models/Personal-info.model";
+import {Hash} from "../../../../libs/hash";
+
 /**
  * @classdesc for login and signup
  * */
@@ -24,22 +23,9 @@ export default class AuthController implements IController {
 
   init(): void {
     const authMiddleware = new AuthenticationMiddleware();
-    this.router.post(
-      "/login",
-      authMiddleware.controlLoginSignupBody,
-      this.login
-    );
-    this.router.post(
-      "/signup",
-      authMiddleware.controlLoginSignupBody,
-      this.signup
-    );
-    this.router.put(
-      "/update",
-      passport.token,
-      authMiddleware.controlUpdateBody,
-      this.updateAuth
-    );
+    this.router.post("/login", authMiddleware.controlLoginSignupBody, this.login);
+    this.router.post("/signup", authMiddleware.controlLoginSignupBody, this.signup);
+    this.router.put("/update", passport.token, authMiddleware.controlUpdateBody, this.updateAuth);
   }
 
   /**
@@ -69,12 +55,11 @@ export default class AuthController implements IController {
   private login({ body, ip }: Request, res: Response) {
     User.findByUsername(body.userName)
       .then((user) => {
-        if (!user) {
-          throw new ServerError(eMessages.WRONG_USER_OR_PASS);
+        if (user && new Hash().verifyPassword(body.password, user.password)) {
+          new Email().loginReport(user.email, ip)
+          return AuthController.makeResponse(user);
         }
-        // send Email
-        new Email().loginReport(user.email, ip)
-        return AuthController.makeResponse(user);
+        throw new ServerError(eMessages.WRONG_USER_OR_PASS);
       })
       .then(success(res))
       .catch(sendError(res));
@@ -108,7 +93,6 @@ export default class AuthController implements IController {
     User._findOrCreate(body.userName, body)
       .then(async ([user, created]) => {
         if (!created) throw new ServerError(eMessages.USER_EXIST);
-
         if (user) return AuthController.makeResponse(user);
       })
       .then(success(res, sMessages.USER_CREATED))
@@ -140,8 +124,6 @@ export default class AuthController implements IController {
    *                      }
    */
   private updateAuth({ body, user }: Request, res: Response) {
-    const test = Importer(["test1"]);
-    console.log(test);
     User.findOne({
       where: { id: user["id"] },
     })

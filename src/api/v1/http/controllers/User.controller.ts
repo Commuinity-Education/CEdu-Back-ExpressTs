@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express'
 import IController from '../../../../interfaces/controller.interface'
 import PersonalInfo from "../../../../models/Personal-info.model";
 import personalInfoBody from "../middleware/personal-info/saveValidator.middleware";
-import { uploadAvatar } from "../middleware/upload/upload.middleware";
+import { uploadAvatar } from "../../../../middlewares/upload/upload.middleware";
 import { sendError, success } from "../../../../utils/helpers/response";
 import { deleteFile } from "../../../../utils/helpers/general";
 import User from "../../../../models/User.model";

@@ -5,10 +5,8 @@ import apiRoutes from "./api/routes";
 import { notFoundPage, errorHandler } from "./middlewares/404Error.middleware";
 import * as morgan from "morgan";
 import * as cors from "cors";
-import { Server } from "socket.io";
 import * as path from "path";
 import * as express from "express";
-import { SocketIo } from "./libs/SocektIo";
 
 const app = new App(
   {

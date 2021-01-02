@@ -94,8 +94,14 @@ export default class User extends BaseModel {
     }
 
     readonly id = this.get('id')
+    readonly userName = this.get('userName')
+    readonly password = this.get('password')
+    readonly phoneNumber = this.get('phoneNumber')
+    readonly isUni = this.get('isUni')
+    readonly email = this.get('email')
+    readonly googleId = this.get('googleId')
 
-    static findByUsername(userName: string,): Promise<any> {
+    static findByUsername(userName: string,): Promise<User> {
         return User.findOne({
             where: {
                 userName

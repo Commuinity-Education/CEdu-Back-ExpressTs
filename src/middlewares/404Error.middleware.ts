@@ -5,7 +5,8 @@ import {eMessages} from "../utils/constants/eMessages";
 import {HandelErrors} from "../errors/HandelErrors";
 
 export const notFoundPage = (req: Request, res: Response, next) => {
-    next(new ServerError(eMessages.ROUTE_NOT_FOUND(req.path)))
+
+    next(new ServerError(eMessages.ROUTE_NOT_FOUND(req.method,req.path)))
 }
 
 export const errorHandler = async (error, req, res, next) => {

@@ -65,7 +65,6 @@ export class HandelErrors {
      * @return  error - return error like example
      **/
     public get properError() {
-        console.log(this.errorProperty)
         return this.errorProperty
     }
 
