@@ -1,18 +1,13 @@
 import Groups from "../../../../models/Groups.model";
-import {FindAttributeOptions, Op} from "sequelize";
+import {Op} from "sequelize";
 import User from "../../../../models/User.model";
-import Channels from "../../../../models/Channels.model";
 import * as _ from 'lodash'
-import Subscriber_Channel from "../../../../models/Subscriber-channel.model";
-import {sendError, success} from "../../../../utils/helpers/response";
-import {sMessages} from "../../../../utils/constants/SMessages";
 import Members_Group from "../../../../models/Members_Group.model";
 import IUser from "../../../../interfaces/User.interface";
 
 export class GroupsService {
     constructor() {
     }
-
     /**
      * get all groups by groups name
      * @return {Promise} Groups list and there counts

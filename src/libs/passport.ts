@@ -1,4 +1,4 @@
-import * as passport from "passport";
+import  passport from "passport";
 import {ExtractJwt, Strategy as JwtStrategy} from "passport-jwt";
 import config from "../configs/config";
 import {eMessages} from "../utils/constants/eMessages";

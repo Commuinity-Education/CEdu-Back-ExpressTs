@@ -1,12 +1,11 @@
 import ServerError from "../errors/serverError";
-import * as email from "nodemailer";
+import email from "nodemailer";
 import configs from "../configs/config";
 import { emailOptions } from "../interfaces/Email.interface";
-import { sMessages } from "../utils/constants/SMessages";
 import { welcome } from "../utils/Email/templates/signupWelcome";
 import emailMessages from '../utils/Email/messages'
 import { report } from "../utils/Email/templates/loginReport";
-import * as moment from 'moment'
+import  moment from 'moment'
 export default class Email {
   private sendMail(options: emailOptions) {
     options.from = options.from ? options.from : configs.email.from;

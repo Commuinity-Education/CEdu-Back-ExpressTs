@@ -1,7 +1,11 @@
 import {Router} from 'express'
 import v1 from './v1/routes'
-const router= Router()
+import swaggerUi from 'swagger-ui-express'
+import swaggerDoc from '../swagger.json'
 
-router.use('/v1',v1)
+const router = Router()
+
+router.use('/v1', v1)
+router.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
 
 export default router

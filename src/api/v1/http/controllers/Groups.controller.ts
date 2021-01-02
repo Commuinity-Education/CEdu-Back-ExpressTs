@@ -165,6 +165,9 @@ export default class GroupsController implements IController {
             .catch(sendError(res))
     }
 
+    // TODO validate body or param
+    // TODO make sure one time user can request and join in group
+    // TODO update api doc
     /**
      * @api {post} /channel/:channelId/subscribe Subscribe Channel
      * @apiName Subscribe Channel
