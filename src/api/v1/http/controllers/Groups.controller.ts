@@ -10,15 +10,17 @@ import ServerError from "../../../../errors/serverError";
 import {eMessages} from '../../../../utils/constants/eMessages'
 import Subscriber_Channel from "../../../../models/Subscriber-channel.model"
 import PersonalInfo from "../../../../models/Personal-info.model";
-import {validateParamId, requestPrivate} from "../middleware/Channels/general.middleware";
 import Groups from "../../../../models/Groups.model";
 import {GroupsMiddleware} from "../middleware/groups/Groups.middleware";
 import {GroupsService} from "../services/Groups.service";
+import IUser from "../../../../interfaces/User.interface";
+import {GeneralMiddleware} from "../../../../middlewares/General.middleware";
 
 
 export default class GroupsController implements IController {
     router = Router()
     private middleware = new GroupsMiddleware()
+    private generalMiddleware = new GeneralMiddleware()
 
     constructor() {
         this.init()
@@ -28,11 +30,11 @@ export default class GroupsController implements IController {
         this.router.post('/create', passport.token, this.middleware.createGroup_validateBody, this.createGroup)
         this.router.get('/list/:groupName', this.getGroupsByName)
         this.router.get('/list', passport.token, this.getOwneGroupList)
-        this.router.put('/update/:channelId', passport.token, validateParamId, createAndUpdateChannelBody, this.updateChannel)
-        this.router.delete('/remove/:channelId', passport.token, validateParamId, this.deleteChannel)
-        this.router.post('/:groupId/join', passport.token, validateParamId, requestPrivate, this.join)
-        this.router.get('/:channelId/subscribers', passport.token, validateParamId, this.getChannelsSubscribers)
-        this.router.delete('/:channelId/unsubscribe', passport.token, validateParamId, this.unsubscribe)
+        this.router.post('/:groupId/join', passport.token, this.generalMiddleware.validateParamId('group'), this.generalMiddleware.requestPrivate("group"), this.join)
+        this.router.put('/update/:channelId', passport.token, this.generalMiddleware.validateParamId('group'), createAndUpdateChannelBody, this.updateChannel)
+        this.router.delete('/remove/:channelId', passport.token, this.generalMiddleware.validateParamId('group'), this.deleteChannel)
+        this.router.get('/:channelId/subscribers', passport.token, this.generalMiddleware.validateParamId('group'), this.getChannelsSubscribers)
+        this.router.delete('/:channelId/unsubscribe', passport.token, this.generalMiddleware.validateParamId('group'), this.unsubscribe)
     }
 
 
@@ -187,25 +189,7 @@ export default class GroupsController implements IController {
      *     }
      */
     private join({params, user}: Request, res: Response) {
-        Subscriber_Channel.findOrCreate({
-            where: {
-                channelId: params.channelId,
-                subscriberId: user['id']
-            },
-            defaults: {
-                channelId: params.channelId,
-                subscriberId: user['id']
-            },
-            paranoid: false
-        })
-            .then(async ([data, isCreated]) => {
-                if (isCreated) return data
-                // if a user unsubscribe the channel, deletedAt, will set to a date and if user subscribe again deletedAt will be null
-                if (data['deletedAt']) {
-                    data.setDataValue('deletedAt', null)
-                    return data.save()
-                }
-            })
+        new GroupsService().joinGroup(params.groupId, <IUser>user)
             .then(success(res, sMessages.IS_SUBSCRIBE))
             .catch(sendError(res))
     }
@@ -291,8 +275,6 @@ export default class GroupsController implements IController {
             .then(success(res, sMessages.DELETE_OK))
             .catch(sendError(res))
     }
-
-
 
 
     /**

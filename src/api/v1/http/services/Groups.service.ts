@@ -3,6 +3,11 @@ import {FindAttributeOptions, Op} from "sequelize";
 import User from "../../../../models/User.model";
 import Channels from "../../../../models/Channels.model";
 import * as _ from 'lodash'
+import Subscriber_Channel from "../../../../models/Subscriber-channel.model";
+import {sendError, success} from "../../../../utils/helpers/response";
+import {sMessages} from "../../../../utils/constants/SMessages";
+import Members_Group from "../../../../models/Members_Group.model";
+import IUser from "../../../../interfaces/User.interface";
 
 export class GroupsService {
     constructor() {
@@ -53,7 +58,7 @@ export class GroupsService {
      * */
     getUserGroupsAndCount(id) {
         return User.findAll({
-            where:{ id },
+            where: {id},
             attributes: [],
             include: [
                 {
@@ -62,13 +67,41 @@ export class GroupsService {
                 }
             ],
             // DESC-ASC
-            order: [['groups','groupName', 'ASC']]
+            order: [['groups', 'groupName', 'ASC']]
         })
             .then((user) => {
-                let groups=user[0]['groups']
+                let groups = user[0]['groups']
                 return {
                     groups,
-                    count:_.size(groups)
+                    count: _.size(groups)
+                }
+            })
+
+    }
+
+    /**
+     * @description save user Id and group Id in to Member_Group for joining user to group
+     * @param {string} groupId that group to user want to join
+     * @param {IUser} user user to want to join to group
+     * @return {Members_Group<Promise>}  Members_Group
+     * */
+    joinGroup(groupId: string, user: IUser) {
+        return Members_Group.findOrCreate({
+            where: {
+                groupId,
+                memberId: user.id
+            },
+            defaults: {
+                channelId: groupId,
+                memberId: user.id
+            },
+            paranoid: false
+        })
+            .then(async ([data, isCreated]) => {
+                if (isCreated) return data
+                if (data['deletedAt']) {
+                    data.setDataValue('deletedAt', null)
+                    return data.save()
                 }
             })
 
