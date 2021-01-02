@@ -33,6 +33,8 @@ export default class GroupsController implements IController {
         this.router.post('/:groupId/join', passport.token, validateParamId, requestPrivate, this.join)
         this.router.get('/:channelId/subscribers', passport.token, validateParamId, this.getChannelsSubscribers)
         this.router.delete('/:channelId/unsubscribe', passport.token, validateParamId, this.unsubscribe)
+        //TODO validateParamId
+        this.router.get('/list/:groupId', passport.token , this.getGroupMembers)
     }
 
 
@@ -397,4 +399,45 @@ export default class GroupsController implements IController {
             .catch(sendError(res))
     }
 
+
+
+    /**
+     * @api {get} /groups/list/:groupId Get List Of Groups Member List
+     * @apiName Get Groups Member List - Public
+     * @apiGroup Groups
+     *
+     * @apiSuccess (200) {object} data List of Groups Member List.
+     * @apiSuccessExample {json} Success-Response:
+     *    {
+     *      "status": 200,
+     *      "code": 3000,
+     *      "message": "ok",
+     *      "data": [
+     *                  {
+     *                      "id": "2f955234-cf31-40d4-aaa6-f7c4b60035fa",
+     *                      "groupName": "untitled Group",
+     *                      "isPrivate": false,
+     *                      "createdAt": "2020-12-19T11:07:10.832Z",
+     *                      "user": {
+     *                          "userName": "user1"
+     *                      },
+     *                      "memberCount": 0
+     *                  },
+     *             ]
+     *     }
+     * @apiError (404) not-Found many defrent error can be responsed
+     * @apiErrorExample {json} Error-Response:
+     *    HTTP/1.1 404 NotFound
+     *     {
+     *       status: 'error',
+     *       code:1001 ,
+     *       message: Not found
+     *     }
+     */
+
+    private getGroupMembers({params, user}: Request, res: Response) {
+        new GroupsService().getGroupMembersList(params.groupId)
+        .then(success(res))
+        .catch(sendError(res))
+    }
 }

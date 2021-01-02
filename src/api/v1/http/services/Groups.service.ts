@@ -2,6 +2,7 @@ import Groups from "../../../../models/Groups.model";
 import {FindAttributeOptions, Op} from "sequelize";
 import User from "../../../../models/User.model";
 import Channels from "../../../../models/Channels.model";
+import MembersGroup from "../../../../models/Members_Group.model"
 import * as _ from 'lodash'
 
 export class GroupsService {
@@ -72,5 +73,23 @@ export class GroupsService {
                 }
             })
 
+    }
+
+    /**
+     * get all groups by groups name
+     * @return {Promise} Groups members and there counts
+     * @param {UUID} groupId - id of group
+     * */
+    getGroupMembersList(groupId) {
+        return MembersGroup.findAll({
+            where: {
+                groupId
+            }
+        }).then(membersGroup => {
+            return {
+                membersGroup,
+                count:_.size(membersGroup)
+            }
+        })
     }
 }
