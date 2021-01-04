@@ -93,7 +93,9 @@ export class GroupsService {
             paranoid: false
         })
             .then(async ([data, isCreated]) => {
+                //if created means its join now
                 if (isCreated) return data
+                // if find it and it was deleted make null to rejoin
                 if (data['deletedAt']) {
                     data.setDataValue('deletedAt', null)
                     return data.save()

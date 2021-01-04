@@ -69,7 +69,7 @@ export const eMessages = {
         code: 1011
     },
     SUBSCRIBED_BEFORE:{
-        message: 'you ahve already subscribe this channel before',
+        message: 'you have already subscribe this channel',
         statusCode: StatusCodes.BAD_REQUEST,
         code: 1012
     },
@@ -87,7 +87,11 @@ export const eMessages = {
         message: 'you cant change request status twice plz ask for request again',
         code: 1015,
         statusCode: StatusCodes.BAD_REQUEST
-    }
+    }, JOIN_BEFORE:{
+        message: 'you have already join on this group',
+        statusCode: StatusCodes.BAD_REQUEST,
+        code: 1016
+    },
 
 
 }

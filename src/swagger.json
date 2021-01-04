@@ -31,6 +31,10 @@
     {
       "name": "User",
       "description": "Users info "
+    },
+    {
+      "name": "Groups",
+      "description": ""
     }
   ],
   "schemes": [
@@ -268,9 +272,53 @@
         ]
       }
     },
-
-
-
+    "/groups/{groupId}/join": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "join the use in the group",
+        "operationId": "joinGroup",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "description": "id of the group that user want to join",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "properties": {
+                "status": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "number"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer_auth": []
+          }
+        ]
+      }
+    },
     "/pet/findByStatus": {
       "get": {
         "tags": [
@@ -308,7 +356,6 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Pet"
               }
             }
           },
@@ -357,7 +404,6 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Pet"
               }
             }
           },
@@ -377,47 +423,6 @@
       }
     },
     "/pet/{petId}": {
-      "get": {
-        "tags": [
-          "pet"
-        ],
-        "summary": "Find pet by ID",
-        "description": "Returns a single pet",
-        "operationId": "getPetById",
-        "produces": [
-          "application/xml",
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "petId",
-            "in": "path",
-            "description": "ID of pet to return",
-            "required": true,
-            "type": "integer",
-            "format": "int64"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/Pet"
-            }
-          },
-          "400": {
-            "description": "Invalid ID supplied"
-          },
-          "404": {
-            "description": "Pet not found"
-          }
-        },
-        "security": [
-          {
-            "api_key": []
-          }
-        ]
-      },
       "post": {
         "tags": [
           "pet"
@@ -557,7 +562,6 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/ApiResponse"
             }
           }
         },
@@ -621,7 +625,6 @@
             "description": "order placed for purchasing the pet",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/Order"
             }
           }
         ],
@@ -629,7 +632,6 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/Order"
             }
           },
           "400": {
@@ -666,7 +668,6 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/Order"
             }
           },
           "400": {
@@ -728,7 +729,6 @@
             "description": "Created user object",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/User"
             }
           }
         ],
@@ -760,7 +760,6 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/User"
               }
             }
           }
@@ -793,7 +792,6 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/User"
               }
             }
           }
@@ -903,7 +901,6 @@
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/User"
             }
           },
           "400": {
@@ -939,7 +936,6 @@
             "description": "Updated user object",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/User"
             }
           }
         ],
@@ -995,134 +991,6 @@
       "in": "header"
     }
   },
-  "definitions": {
-    "Order": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "petId": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "quantity": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "shipDate": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "Order Status",
-          "enum": [
-            "placed",
-            "approved",
-            "delivered"
-          ]
-        },
-        "complete": {
-          "type": "boolean",
-          "default": false
-        }
-      },
-      "xml": {
-        "name": "Order"
-      }
-    },
-    "Category": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "xml": {
-        "name": "Category"
-      }
-    },
-    "User": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "username": {
-          "type": "string"
-        },
-        "firstName": {
-          "type": "string"
-        },
-        "lastName": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        },
-        "phone": {
-          "type": "string"
-        },
-        "userStatus": {
-          "type": "integer",
-          "format": "int32",
-          "description": "User Status"
-        }
-      },
-      "xml": {
-        "name": "User"
-      }
-    },
-    "Tag": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "xml": {
-        "name": "Tag"
-      }
-    },
-    "Pet": {
-      "xml": {
-        "name": "Pet"
-      }
-    },
-    "ApiResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "type": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
-    }
-  },
-  "externalDocs": {
-    "description": "Find out more about Swagger",
-    "url": "http://swagger.io"
-  }
 }
 
 

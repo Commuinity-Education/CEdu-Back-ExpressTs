@@ -40,7 +40,7 @@ export class GeneralMiddleware {
             raw: true
         })
         if (model['isPrivate']) {
-            Requests.makeRequest(model['ownerId'], user['id'], REQUEST_TYPE.channel, model['id'], model[channelOrGroupSwitcher[type].title])
+            Requests.makeRequest(model['ownerId'], user['id'], REQUEST_TYPE[type], model['id'], model[channelOrGroupSwitcher[type].title])
                 .then(success(res, sMessages.REQUEST_SEND_OK))
                 .catch(sendError(res))
         } else {
