@@ -89,6 +89,7 @@ export default class AuthController implements IController {
    *                          token : <bearer-token>
    *                      }
    */
+  //TODO check email
   private signup({ body }: Request, res: Response) {
     User._findOrCreate(body.userName, body)
       .then(async ([user, created]) => {

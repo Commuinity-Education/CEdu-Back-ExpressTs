@@ -10,15 +10,18 @@ import ServerError from "../../../../errors/serverError";
 import {eMessages} from '../../../../utils/constants/eMessages'
 import Subscriber_Channel from "../../../../models/Subscriber-channel.model"
 import PersonalInfo from "../../../../models/Personal-info.model";
-import {validateParamId, requestPrivate} from "../middleware/Channels/general.middleware";
 import Groups from "../../../../models/Groups.model";
 import {GroupsMiddleware} from "../middleware/groups/Groups.middleware";
 import {GroupsService} from "../services/Groups.service";
+import IUser from "../../../../interfaces/User.interface";
+import {GeneralMiddleware} from "../../../../middlewares/General.middleware";
+import MembersGroup from "../../../../models/Members_Group.model"
 
 
 export default class GroupsController implements IController {
     router = Router()
     private middleware = new GroupsMiddleware()
+    private generalMiddleware = new GeneralMiddleware()
 
     constructor() {
         this.init()
@@ -28,13 +31,16 @@ export default class GroupsController implements IController {
         this.router.post('/create', passport.token, this.middleware.createGroup_validateBody, this.createGroup)
         this.router.get('/list/:groupName', this.getGroupsByName)
         this.router.get('/list', passport.token, this.getOwneGroupList)
-        this.router.put('/update/:channelId', passport.token, validateParamId, createAndUpdateChannelBody, this.updateChannel)
-        this.router.delete('/remove/:channelId', passport.token, validateParamId, this.deleteChannel)
-        this.router.post('/:groupId/join', passport.token, validateParamId, requestPrivate, this.join)
-        this.router.get('/:channelId/subscribers', passport.token, validateParamId, this.getChannelsSubscribers)
-        this.router.delete('/:channelId/unsubscribe', passport.token, validateParamId, this.unsubscribe)
-        //TODO validateParamId
-        this.router.get('/list/:groupId', passport.token , this.getGroupMembers)
+        this.router.post('/:groupId/join', passport.token, this.generalMiddleware.validateParamId('group'), this.generalMiddleware.requestPrivate("group"), this.join)
+        this.router.put('/update/:channelId', passport.token, this.generalMiddleware.validateParamId('group'), createAndUpdateChannelBody, this.updateChannel)
+        this.router.delete('/remove/:channelId', passport.token, this.generalMiddleware.validateParamId('group'), this.deleteChannel)
+        this.router.get('/:channelId/subscribers', passport.token, this.generalMiddleware.validateParamId('group'), this.getChannelsSubscribers)
+        this.router.delete('/:channelId/unsubscribe', passport.token, this.generalMiddleware.validateParamId('group'), this.unsubscribe)
+        this.router.get('/list/:groupId', passport.token , this.generalMiddleware.validateParamId('group') ,this.getGroupMembers)
+        this.router.get('/list/join/:id', passport.token, this.getUsersJoinGroup)
+        this.router.delete('/remove-group/:groupId', passport.token, this.generalMiddleware.validateParamId('group') ,this.deleteGroup) 
+        this.router.delete('/unjoin-group/:groupId', passport.token, this.generalMiddleware.validateParamId('group') , this.unjoinGroup )
+        this.router.delete('/:groupId/:memberId',passport.token, this.generalMiddleware.validateParamId('group'), this.ownerRemoveMember)
     }
 
 
@@ -189,25 +195,7 @@ export default class GroupsController implements IController {
      *     }
      */
     private join({params, user}: Request, res: Response) {
-        Subscriber_Channel.findOrCreate({
-            where: {
-                channelId: params.channelId,
-                subscriberId: user['id']
-            },
-            defaults: {
-                channelId: params.channelId,
-                subscriberId: user['id']
-            },
-            paranoid: false
-        })
-            .then(async ([data, isCreated]) => {
-                if (isCreated) return data
-                // if a user unsubscribe the channel, deletedAt, will set to a date and if user subscribe again deletedAt will be null
-                if (data['deletedAt']) {
-                    data.setDataValue('deletedAt', null)
-                    return data.save()
-                }
-            })
+        new GroupsService().joinGroup(params.groupId, <IUser>user)
             .then(success(res, sMessages.IS_SUBSCRIBE))
             .catch(sendError(res))
     }
@@ -293,8 +281,6 @@ export default class GroupsController implements IController {
             .then(success(res, sMessages.DELETE_OK))
             .catch(sendError(res))
     }
-
-
 
 
     /**
@@ -440,4 +426,88 @@ export default class GroupsController implements IController {
         .then(success(res))
         .catch(sendError(res))
     }
+/**
+     * @api {get} /groups//list/join/:id Get List Of Join group  List Of User
+     * @apiName Get User's Join groups list - Public
+     * @apiGroup Groups
+     *
+     * @apiSuccess (200) {object} data List of Groups Member List.
+     * @apiSuccessExample {json} Success-Response:
+     *    {
+     *                  "status": 200,
+     *                  "code": 3000,
+     *                  "message": "ok",
+     *                  "data": {
+     *                  "JoinGroupList": [
+     *                    {
+     *                     "group.groupName": "test"
+     *                      },
+     *                      {
+     *                    "group.groupName": "test5"
+     *                   }
+     *                 ],
+     *             "count": 2
+     *       }
+     *    }
+     * @apiError (404) not-Found many defrent error can be responsed
+     * @apiErrorExample {json} Error-Response:
+     *    HTTP/1.1 404 NotFound
+     *     {
+     *       status: 'error',
+     *       code:1001 ,
+     *       message: Not found
+     *     }
+     */
+
+    private getUsersJoinGroup({params, user}: Request, res: Response) {
+        new GroupsService().getUsersJoinGroupList(<IUser>user)
+        .then(success(res))
+        .catch(sendError(res))
+    }
+
+
+
+    private deleteGroup({params, user}: Request, res: Response) {
+        Groups.destroy({
+            where: {
+                id: params.groupId,
+            }
+        }).then((number) => {
+            if (number) return number
+            throw new ServerError(eMessages.DELETE_UNABLE)
+        })
+            .then(success(res, sMessages.DELETE_OK))
+            .catch(sendError(res))
+
+    }
+
+    private unjoinGroup({params, user} : Request, res:Response) {
+        MembersGroup.destroy({
+            where: {
+                memberId: user['id'],
+                groupId:params.groupId
+            }
+        }).then((number) => {
+            if (number) return number
+            throw new ServerError(eMessages.DELETE_UNABLE)
+        })
+            .then(success(res, sMessages.DELETE_OK))
+            .catch(sendError(res))
+    }
+//remove member by group owner
+    private ownerRemoveMember({params} : Request, res:Response) {
+        return MembersGroup.destroy({
+            where:{
+                memberId: params.memberId,
+                groupId: params.groupId 
+            }
+        }).then((number) => {
+            if (number) return number
+            throw new ServerError(eMessages.DELETE_UNABLE)
+        })
+            .then(success(res, sMessages.DELETE_OK))
+            .catch(sendError(res))
+    }
+
+    
 }
