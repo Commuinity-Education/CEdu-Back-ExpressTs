@@ -2,7 +2,6 @@ import {Request, Response, Router} from "express";
 import Channels from "../../../../models/Channels.model";
 import IController from "../../../../interfaces/controller.interface";
 import {sendError, success} from "../../../../utils/helpers/response";
-import {createAndUpdateChannelBody} from "../middleware/Channels/body.middleware"
 import passport from "../../../../libs/passport";
 import User from "../../../../models/User.model";
 import {sMessages} from "../../../../utils/constants/SMessages";
@@ -31,8 +30,9 @@ export default class GroupsController implements IController {
         this.router.post('/create', passport.token, this.middleware.createGroup_validateBody, this.createGroup)
         this.router.get('/list/:groupName', this.getGroupsByName)
         this.router.get('/list', passport.token, this.getOwneGroupList)
-        this.router.post('/:groupId/join', passport.token, this.generalMiddleware.validateParamId('group'), this.generalMiddleware.requestPrivate("group"), this.join)
-        this.router.put('/update/:channelId', passport.token, this.generalMiddleware.validateParamId('group'), createAndUpdateChannelBody, this.updateChannel)
+        this.router.post('/:groupId/join', passport.token, this.generalMiddleware.validateParamId('group'),this.middleware.checkJoinOneTime, this.generalMiddleware.requestPrivate("group"), this.join)
+
+        this.router.put('/update/:channelId', passport.token, this.generalMiddleware.validateParamId('group'), this.updateChannel)
         this.router.delete('/remove/:channelId', passport.token, this.generalMiddleware.validateParamId('group'), this.deleteChannel)
         this.router.get('/:channelId/subscribers', passport.token, this.generalMiddleware.validateParamId('group'), this.getChannelsSubscribers)
         this.router.delete('/:channelId/unsubscribe', passport.token, this.generalMiddleware.validateParamId('group'), this.unsubscribe)
@@ -171,29 +171,11 @@ export default class GroupsController implements IController {
             .catch(sendError(res))
     }
 
-    /**
-     * @api {post} /channel/:channelId/subscribe Subscribe Channel
-     * @apiName Subscribe Channel
-     * @apiGroup Channel
-     * @apiParam {String} channelId Required - need channel id from param to subscribe
-     * @apiHeader {Bearer} Authorization  JWT token
-     * @apiSuccess (200) {string} message Request send successfully.
-     * @apiSuccessExample {json} Success-Response:
-     *                      {
-     * "status": 200,
-     * "code": 3006,
-     * "message": "Request send successfully",
-     * "data": null
-     *}
-     * @apiError (400) Bad-Request many defrent error can be responsed
-     * @apiErrorExample {json} Error-Response:
-     *    HTTP/1.1 404 notFound
-     *     {
-     *       status: 'error',
-     *       code:1001 ,
-     *       message: "notFound"
-     *     }
-     */
+  /**
+   * join in group
+   * @param groupId
+   * @param res
+   * */
     private join({params, user}: Request, res: Response) {
         new GroupsService().joinGroup(params.groupId, <IUser>user)
             .then(success(res, sMessages.IS_SUBSCRIBE))

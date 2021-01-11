@@ -3,8 +3,8 @@ import * as bodyParser from "body-parser";
 import config from "./configs/config";
 import apiRoutes from "./api/routes";
 import { notFoundPage, errorHandler } from "./middlewares/404Error.middleware";
-import * as morgan from "morgan";
-import * as cors from "cors";
+import  morgan from "morgan";
+import  cors from "cors";
 import * as path from "path";
 import * as express from "express";
 

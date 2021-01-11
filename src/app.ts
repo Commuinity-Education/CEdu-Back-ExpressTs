@@ -1,4 +1,4 @@
-import * as express from "express";
+import  express from "express";
 import { Application } from "express";
 import { createServer, HttpBase } from "http";
 const chalk = require("chalk");

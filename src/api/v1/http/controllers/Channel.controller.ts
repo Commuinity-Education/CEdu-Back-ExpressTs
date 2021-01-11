@@ -2,7 +2,6 @@ import {Request, Response, Router} from "express";
 import Channels from "../../../../models/Channels.model";
 import IController from "../../../../interfaces/controller.interface";
 import {sendError, success} from "../../../../utils/helpers/response";
-import {createAndUpdateChannelBody} from "../middleware/Channels/body.middleware"
 import passport from "../../../../libs/passport";
 import User from "../../../../models/User.model";
 import {sMessages} from "../../../../utils/constants/SMessages";
@@ -24,10 +23,10 @@ export default class ChannelsController implements IController {
     }
 
     init() {
-        this.router.post('/create', passport.token, createAndUpdateChannelBody, this.createChannel)
+        this.router.post('/create', passport.token,this.middleware.createAndUpdateChannelBody, this.createChannel)
         this.router.get('/list/:userName', this.getAllChannels)
         this.router.get('/list', passport.token, this.getOwneChannelList)
-        this.router.put('/update/:channelId', passport.token, this.generalMiddleware.validateParamId('channel'), createAndUpdateChannelBody, this.updateChannel)
+        this.router.put('/update/:channelId', passport.token, this.generalMiddleware.validateParamId('channel'),this.middleware.createAndUpdateChannelBody, this.updateChannel)
         this.router.delete('/remove/:channelId', passport.token, this.generalMiddleware.validateParamId('channel'), this.deleteChannel)
         this.router.post('/:channelId/subscribe', passport.token, this.generalMiddleware.validateParamId('channel'), this.middleware.checkSubscriptionBefore, this.generalMiddleware.requestPrivate('channel'), this.subscribe)
         this.router.get('/:channelId/subscribers', passport.token, this.generalMiddleware.validateParamId('channel'), this.getChannelsSubscribers)

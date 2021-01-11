@@ -1,6 +1,6 @@
-import * as _multer from "multer";
+import  _multer from "multer";
 import { NextFunction, Response } from "express";
-import * as multerS3 from "multer-s3";
+import  multerS3 from "multer-s3";
 import * as aws from "aws-sdk";
 import config from "../configs/config";
 import ServerError from "../errors/serverError";
