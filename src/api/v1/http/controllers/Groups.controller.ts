@@ -493,7 +493,7 @@ export default class GroupsController implements IController {
     }
 //TODO has err
     //update Groups  -  127.0.01:10000/api/v1/groups/update-group/c8dae5e7-6a42-45a5-b122-d18f38920292
-    private updateGroup({body ,params, user}: Request, res: Response){
+    private updateGroup({body ,params, user}: Request, res: Response) {
         const { groupName, isPrivate } = body
         
         return Groups.update({ groupName, isPrivate }, {
