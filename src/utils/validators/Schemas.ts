@@ -74,12 +74,20 @@ export default class Schemas {
         isPrivate: Joi.boolean().empty(null),
         title: Joi.string().empty(null)
     }
+    //new Groups create need this propertis
+    #createGroupBody = {
+        isPrivate: Joi.boolean().empty(null),
+        groupName: Joi.string().empty(null)
+    }
     /** 
      * get new channel body data validation schemas
      * @return {Object} schema
      */
     get createChannelBody() {
         return this.#createChannelBody
+    }
+    get createGroupBody() {
+        return this.#createGroupBody
     }
 
     #requestStatusBody = {

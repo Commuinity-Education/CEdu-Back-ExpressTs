@@ -46,4 +46,10 @@ export class GroupsMiddleware {
             })
             .catch(sendError(res))
     }
+
+    createAndUpdateGroupBody = (req: Request, res: Response, next): void => {
+        const joi = new JoiValidator()
+        req.body = joi.createGroupBody(req.body)
+        next()
+    }
 }

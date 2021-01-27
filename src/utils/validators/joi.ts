@@ -43,6 +43,9 @@ export default class JoiValidator {
     public createChannelBody(body: object) {
         return this._validate(this.schema.createChannelBody, body)
     }
+    public createGroupBody(body: object) {
+        return this._validate(this.schema.createGroupBody, body)
+    }
 
     /**
      * @param {string} body.requesterId

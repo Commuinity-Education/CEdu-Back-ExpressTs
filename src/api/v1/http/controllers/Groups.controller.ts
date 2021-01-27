@@ -41,6 +41,7 @@ export default class GroupsController implements IController {
         this.router.delete('/remove-group/:groupId', passport.token, this.generalMiddleware.validateParamId('group') ,this.deleteGroup) 
         this.router.delete('/unjoin-group/:groupId', passport.token, this.generalMiddleware.validateParamId('group') , this.unjoinGroup )
         this.router.delete('/:groupId/:memberId',passport.token, this.generalMiddleware.validateParamId('group'), this.ownerRemoveMember)
+        this.router.put('/update-group/:groupId' , passport.token, this.generalMiddleware.validateParamId('group'),this.middleware.createAndUpdateGroupBody, this.updateGroup)
     }
 
 
@@ -490,6 +491,22 @@ export default class GroupsController implements IController {
             .then(success(res, sMessages.DELETE_OK))
             .catch(sendError(res))
     }
-
-    
+//TODO has err
+    //update Groups  -  127.0.01:10000/api/v1/groups/update-group/c8dae5e7-6a42-45a5-b122-d18f38920292
+    private updateGroup({body ,params, user}: Request, res: Response){
+        const { groupName, isPrivate } = body
+        
+        return Groups.update({ groupName, isPrivate }, {
+            where: {
+                id: params.groupId ,
+                ownerId: user['id']
+            }
+        })
+            .then(([number]) => {
+                if (number) return number
+                throw new ServerError(eMessages.UPDATE_UNABLE)
+            })
+            .then(success(res, sMessages.UPDATE_AUTH_OK))
+            .catch(sendError(res))
+    }
 }
