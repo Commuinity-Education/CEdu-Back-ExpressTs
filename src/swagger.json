@@ -34,7 +34,11 @@
     },
     {
       "name": "Groups",
-      "description": ""
+      "description": "CRUD Operation Group",
+      "externalDocs": {
+        "description": "Groups ",
+        "url": ""
+      }
     }
   ],
   "schemes": [
@@ -307,6 +311,83 @@
                 },
                 "message": {
                   "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer_auth": []
+          }
+        ]
+      }
+    },
+    "/groups/list/:groupId": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Get List Of Groups Member List",
+        "operationId": "",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "groupId",
+            "description": "id of the group that user want to join",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "not-Found",
+            "schema": {
+              "properties": {
+                "status": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "number"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success-Response",
+            "schema": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "groupName": {
+                  "type": "string"
+                },
+                "isPrivate": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type":"string"
+                },
+                "memberCount":{
+                  "type":"number"
+                } ,
+                "user": {
+                  "type": "object",
+                  "properties":{
+                    "userName":{
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
